@@ -1,11 +1,11 @@
 {
-  "name": "predicate",
+  "name": "json-pointer",
   "main": "index.js",
   "version": "0.0.0",
   "authors": [
     "Collin Brewer <collin@brewer-collective.com>"
   ],
-  "description": "A utility for defining logical conditions",
+  "description": "A javascript implementation of the RFC 6901 Spec: http://tools.ietf.org/html/rfc6901",
   "moduleType": [
     "amd",
     "es6",
@@ -13,7 +13,11 @@
     "node"
   ],
   "keywords": [
-    "predicate"
+    "json",
+    "pointer",
+    "rfc",
+    "6901",
+    "keypath"
   ],
   "license": "MIT",
   "ignore": [
@@ -22,8 +26,5 @@
     "bower_components",
     "test",
     "tests"
-  ],
-  "dependencies": {
-    "expression": "https://collinbrewer@bitbucket.org/collinbrewer/expression.git"
-  }
+  ]
 }

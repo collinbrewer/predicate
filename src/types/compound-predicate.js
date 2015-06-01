@@ -1,11 +1,23 @@
-(function(){
+var Expression=require("../bower_components/expression/index.js");
+
+(function(root){
+
+   var regex=/[\b\s](&&|and|\|\||or)[\b\s]/gi;
+   var shorthandTypes={"&&":"and", "||":"or"};
+
+   function ExpressionPredicate(expression){
+      this.expression=expression;
+   }
+
+   ExpressionPredicate.prototype.evaluateWithObject=function(o, vars){
+      return this.expression.getValueWithObject(o);
+   };
 
    function CompoundPredicate(type, a)
    {
-
       type=(typeof(type)==="string" ? type : type[0]);
 
-      this.type=({"&&":"and", "||":"or"}[type] || type.toLowerCase());
+      this.type=(shorthandTypes[type] || type.toLowerCase());
 
       var subs=[],
           subpredicates=[];
@@ -23,7 +35,7 @@
       {
          if(!sub.evaluateWithObject)
          {
-            sub=HRPredicate.parse(sub, a);
+            sub=Predicate.parse(sub, a);
          }
 
          subpredicates.push(sub);
@@ -36,16 +48,21 @@
 
       var predicate=null,
           i=0, l=s.length,
-          matches=s.match(HRPredicate.compounderRegex);
+          matches=s.match(regex);
 
-      if(matches)
+      if(matches) // 1 && false
       {
          var compounder=matches[0].trim(),
              index=s.indexOf(compounder),
-             firstPredicate=HRPredicate.parse(s.substring(0, index), args),
-             secondPredicate=HRPredicate.parse(s.substring(index+compounder.length), args);
+             firstPredicate=Predicate.parse(s.substring(0, index), args),
+             secondPredicate=Predicate.parse(s.substring(index+compounder.length), args);
 
-         predicate=new HRCompoundPredicate(compounder, [firstPredicate, secondPredicate]);
+         predicate=new CompoundPredicate(compounder, [firstPredicate, secondPredicate]);
+      }
+      else // false
+      {
+         var expression=Expression.parse(s);
+         predicate=new ExpressionPredicate(expression);
       }
 
       return predicate;
@@ -55,11 +72,11 @@
 
       // var subs=
 
-      return new HRCompoundPredicate("and", [].slice.call(arguments));
+      return new CompoundPredicate("and", [].slice.call(arguments));
    };
 
    CompoundPredicate.or=function(){
-      return HRCompoundPredicate.apply(null, ["or"].concat(arguments));
+      return CompoundPredicate.apply(null, ["or"].concat(arguments));
    };
 
    // $properties: ["subpredicates", "type"],
@@ -68,13 +85,13 @@
    CompoundPredicate.prototype.copy=function(){
       var subs=[];
 
-      // TODO: I think we can just use HR.Object.copy(this.subpredicates) here...
+      // TODO: I think we can just use .Object.copy(this.subpredicates) here...
       for(var i=0, subpredicates=this.subpredicates, l=subpredicates.length; i<l; i++)
       {
          subs.push(subpredicates[i].copy());
       }
 
-      return new HRCompoundPredicate(this.type, subs);
+      return new CompoundPredicate(this.type, subs);
    };
 
    CompoundPredicate.prototype._predicateReferencesKeyPath=function(){
@@ -222,16 +239,18 @@
    };
 
    CompoundPredicate.prototype.and=function(predicate){
-      return new HRCompoundPredicate("and", [this, predicate]);
+      return new CompoundPredicate("and", [this, predicate]);
    };
 
    CompoundPredicate.prototype.or=function(predicate){
-      return new HRCompoundPredicate("or", [this, predicate]);
+      return new CompoundPredicate("or", [this, predicate]);
    };
 
    // expose
    (function(mod, name){
-      (typeof(module)!=="undefined" ? (module.exports=mod) : ((typeof(define)!=="undefined" && define.amd) ? define(function(){ return mod; }) : (window[name]=mode)));
+      (typeof(module)!=="undefined" ? (module.exports=mod) : ((typeof(define)!=="undefined" && define.amd) ? define(function(){ return mod; }) : (window[name]=mod)));
+
+      root[name]=mod;
    })(CompoundPredicate, "CompoundPredicate");
 
-})();
+})(this);

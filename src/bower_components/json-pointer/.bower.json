@@ -1,0 +1,38 @@
+{
+  "name": "json-pointer",
+  "main": "index.js",
+  "authors": [
+    "Collin Brewer <collin@brewer-collective.com>"
+  ],
+  "description": "A javascript implementation of the RFC 6901 Spec: http://tools.ietf.org/html/rfc6901",
+  "moduleType": [
+    "amd",
+    "es6",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "json",
+    "pointer",
+    "rfc",
+    "6901",
+    "keypath"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "_release": "c39bc8e760",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "c39bc8e7607e92ad1b649de363dce2b4c057a9f5"
+  },
+  "_source": "https://collinbrewer@bitbucket.org/collinbrewer/json-pointer.git",
+  "_target": "*",
+  "_originalSource": "https://collinbrewer@bitbucket.org/collinbrewer/json-pointer.git"
+}

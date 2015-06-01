@@ -1,6 +1,10 @@
 // http://developer.apple.com/library/mac/#documentation/cocoa/conceptual/Predicates/Articles/pBNF.html
 
-(function(){
+var Expression=require("../bower_components/expression/index.js");
+
+(function(root){
+
+   var regex=/(==|=|!=|<=|>=|<|>|between|contains|in|beginswith|endswith|like|matches)/i;
 
    // constructor is overloaded with multiple argument options:
    //    left, operator, right
@@ -9,6 +13,7 @@
    //    TODO: {"left", "right", "selector"}
    function ComparisonPredicate(left, right, operator)
    {
+      this.type="comparison";
 
       if(arguments.length===1)
       {
@@ -44,7 +49,7 @@
 
       var p=null;
 
-      var matches=s.match(Predicate.comparisonRegex);
+      var matches=s.match(regex);
 
       if(matches)
       {
@@ -60,10 +65,6 @@
 
          //p={left:Expression.parse(s.substr(0, i).trim()), operator:m, right:Expression.parse(r)};
          p=new ComparisonPredicate(Expression.parse(s.substr(0, i).trim(), args), Expression.parse(r, args), m);
-      }
-      else
-      {
-         console.warn(" Predicate: Confusing comparison predicate(" + s + ") given, aborting gracefully...");
       }
 
       return p;
@@ -317,6 +318,8 @@
 
    // expose
    (function(mod, name){
-      (typeof(module)!=="undefined" ? (module.exports=mod) : ((typeof(define)!=="undefined" && define.amd) ? define(function(){ return mod; }) : (window[name]=mode)));
+      (typeof(module)!=="undefined" ? (module.exports=mod) : ((typeof(define)!=="undefined" && define.amd) ? define(function(){ return mod; }) : (window[name]=mod)));
+
+      root[name]=mod;
    })(ComparisonPredicate, "ComparisonPredicate");
-})();
+})(this);

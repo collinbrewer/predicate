@@ -1,26 +1,56 @@
 // http://developer.apple.com/library/mac/#documentation/cocoa/conceptual/Predicates/Articles/pBNF.html
 
-(function(){
+(function(root){
 
    var parsedCache={};
    var compiledCache={};
 
    // TODO: this is the simplistic first run, look to predicater.html for an in-the-works full parser
-   var comparisonRegex=/(==|=|!=|<=|>=|<|>|between|contains|in|beginswith|endswith|like|matches)/i;
-   var compounderRegex=/[\b\s](&&|and|\|\||or)[\b\s]/gi;
+   // var comparisonRegex=/(==|=|!=|<=|>=|<|>|between|contains|in|beginswith|endswith|like|matches)/i;
+   // var compounderRegex=/[\b\s](&&|and|\|\||or)[\b\s]/gi;
 
    function Predicate()
    {
 
    }
 
-   Predicate._isQuoted: function(s){
+   var predicateClasses=[];
+
+   Predicate.register=function(PredicateClass){
+      predicateClasses.push(PredicateClass);
+   };
+
+   Predicate._isQuoted=function(s){
       var c=s.charAt(0);
       return (c==="'" || c==='"');
    };
 
    // currently handles compound and comparison predicates, does not handle nested predicates
    Predicate.parse=function(s, args){
+
+      var predicate;
+
+      // clean er up a bit... this should probably be taken care of by each predicate class
+      // s=s.trim();
+
+      for(var i=0, l=predicateClasses.length, PredicateClass; i<l, (PredicateClass=predicateClasses[i]); i++)
+      {
+         if((predicate=PredicateClass.parse(s)))
+         {
+            break;
+         }
+      }
+
+
+      // NOTE: I'm not sure if this is how it should work, can we evaluate the substitution variables ahead of time?
+      //    enquoting all the variables should trigger the parser to treat them as constants, however they would no longer be variable expressions
+      if(args && args.constructor!==Array)
+      {
+         p._substitutionVariables=args;
+      }
+
+
+      return predicate;
 
       var p, i, l, c;
 
@@ -116,7 +146,7 @@
                // console.log("found quoted strings: ", quotedStrings);
                // console.log("substituted: ", s);
 
-               var matches=s.match(Predicate.compounderRegex);
+               var matches=s.match(compounderRegex);
 
                if(matches)
                {
@@ -328,7 +358,10 @@
    };
 
    // expose
-   (function(mod, name){
-      (typeof(module)!=="undefined" ? (module.exports=mod) : ((typeof(define)!=="undefined" && define.amd) ? define(function(){ return mod; }) : (window[name]=mode)));
-   })(Predicate, "Predicate");
-})();
+   (function(mod, name, root){
+      (typeof(module)!=="undefined" ? (module.exports=mod) : ((typeof(define)!=="undefined" && define.amd) ? define(function(){ return mod; }) : (window[name]=mod)));
+
+      root[name]=mod;
+   })(Predicate, "Predicate", root);
+
+})(this);
