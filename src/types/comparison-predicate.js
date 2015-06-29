@@ -1,6 +1,6 @@
 // http://developer.apple.com/library/mac/#documentation/cocoa/conceptual/Predicates/Articles/pBNF.html
 
-var Expression=require("../bower_components/expression/index.js");
+var Expression=require("expression");
 
 (function(root){
 

@@ -1,4 +1,12 @@
-var Expression=require("../bower_components/expression/index.js");
+var Expression=require("expression");
+
+// if(typeof(exports)==="object" && typeof(define)!=="function"){
+//    var define=function(id, deps, factory){
+//       require(deps);
+//       var mod=factory(require, exports, module);
+//       mod || (mod=exports);
+//    };
+// }
 
 (function(root){
 

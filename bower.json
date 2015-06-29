@@ -23,7 +23,5 @@
     "test",
     "tests"
   ],
-  "dependencies": {
-    "expression": "https://collinbrewer@bitbucket.org/collinbrewer/expression.git"
-  }
+  "dependencies": {}
 }

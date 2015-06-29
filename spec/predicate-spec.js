@@ -1,5 +1,10 @@
 var should=require("chai").should();
-var Predicate=require("../index.js");
+
+// var Expression=require("./bower_components/expression/index.js");
+//
+// global.Expression=Expression;
+
+var Predicate=require("../src/predicate.js");
 
 describe("Predicate", function(){
 

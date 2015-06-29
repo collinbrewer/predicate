@@ -2,8 +2,6 @@
 
 (function(root){
 
-   var Expression=require("expression");
-
    var parsedCache={};
    var compiledCache={};
 
