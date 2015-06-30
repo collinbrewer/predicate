@@ -1,6 +1,6 @@
 {
   "name": "predicate",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A Javascript utility for evaluating objects against a set of criteria.",
   "main": "built/predicate.js",
   "scripts": {
@@ -10,8 +10,8 @@
     "type": "git",
     "url": "https://collinbrewer@bitbucket.org/collinbrewer/predicate.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Collin Brewer <collin@brewer-collective.com>",
+  "license": "MIT",
   "devDependencies": {
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^1.2.0"
