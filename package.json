@@ -2,7 +2,7 @@
   "name": "predicate",
   "version": "0.0.1",
   "description": "A Javascript utility for evaluating objects against a set of criteria.",
-  "main": "built/predicate.js",
+  "main": "index.js",
   "scripts": {
     "test": "test"
   },
