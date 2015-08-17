@@ -370,7 +370,6 @@
    Predicate.register(ComparisonPredicate);
    Predicate.register(CompoundPredicate);
 
-
    // expose
    (function(mod, name, root){
       (typeof(module)!=="undefined" ? (module.exports=mod) : ((typeof(define)!=="undefined" && define.amd) ? define(function(){ return mod; }) : (window[name]=mod)));
