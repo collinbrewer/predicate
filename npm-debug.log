@@ -5,8 +5,8 @@
 4 info preversion predicate@0.0.2
 5 info git [ 'status', '--porcelain' ]
 6 verbose stack Error: Error: Git working directory not clean.
+6 verbose stack D npm-debug.log
 6 verbose stack M package.json
-6 verbose stack M src/predicate.js
 6 verbose stack     at /usr/local/lib/node_modules/npm/lib/version.js:71:23
 6 verbose stack     at /usr/local/lib/node_modules/npm/lib/version.js:151:34
 6 verbose stack     at ChildProcess.exithandler (child_process.js:742:7)
@@ -21,8 +21,8 @@
 10 error node v0.12.5
 11 error npm  v2.11.2
 12 error Error: Git working directory not clean.
+12 error D npm-debug.log
 12 error M package.json
-12 error M src/predicate.js
 13 error If you need help, you may report this error at:
 13 error     <https://github.com/npm/npm/issues>
 14 verbose exit [ 1, true ]
