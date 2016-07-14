@@ -11,7 +11,7 @@
     "url": "https://collinbrewer@bitbucket.org/collinbrewer/predicate.git"
   },
   "author": "Collin Brewer <collin@brewer-collective.com>",
-  "license": "MIT",
+  "license": "ISC",
   "devDependencies": {
     "chai": "^3.5.0",
     "gulp-rename": "^1.2.2",
