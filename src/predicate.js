@@ -19,7 +19,7 @@
    var predicateClasses=[];
 
    Predicate.register=function(PredicateClass){
-      predicateClasses.push(PredicateClass);
+      predicateClasses.indexOf(PredicateClass)===-1 && predicateClasses.push(PredicateClass);
    };
 
    Predicate._isQuoted=function(s){
@@ -367,8 +367,8 @@
    var ComparisonPredicate=require("./types/comparison-predicate.js");
 
    // dynamic registration
-   Predicate.register(ComparisonPredicate);
    Predicate.register(CompoundPredicate);
+   Predicate.register(ComparisonPredicate);
 
    // expose
    (function(mod, name, root){

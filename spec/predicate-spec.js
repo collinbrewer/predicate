@@ -1,10 +1,6 @@
 var should=require("chai").should();
 
-// var Expression=require("./bower_components/expression/index.js");
-//
-// global.Expression=Expression;
-
-var Predicate=require("../src/predicate.js");
+var Predicate=require("../index.js");
 
 describe("Predicate", function(){
 
@@ -20,6 +16,13 @@ describe("Predicate", function(){
          var predicate=Predicate.parse("1==1");
 
          predicate.type.should.equal("comparison");
+      });
+
+      it("returns a complex compound predicate", function(){
+         var predicate=Predicate.parse("1==1 && 2==2");
+
+         predicate.should.have.property("subpredicates");
+         predicate.subpredicates.should.have.length(2);
       });
    });
 

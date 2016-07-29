@@ -13,14 +13,6 @@ var Expression=require("expression");
    var regex=/[\b\s](&&|and|\|\||or)[\b\s]/gi;
    var shorthandTypes={"&&":"and", "||":"or"};
 
-   function ExpressionPredicate(expression){
-      this.expression=expression;
-   }
-
-   ExpressionPredicate.prototype.evaluateWithObject=function(o, vars){
-      return this.expression.getValueWithObject(o);
-   };
-
    function CompoundPredicate(type, a)
    {
       type=(typeof(type)==="string" ? type : type[0]);
@@ -60,17 +52,14 @@ var Expression=require("expression");
 
       if(matches) // 1 && false
       {
-         var compounder=matches[0].trim(),
-             index=s.indexOf(compounder),
-             firstPredicate=Predicate.parse(s.substring(0, index), args),
-             secondPredicate=Predicate.parse(s.substring(index+compounder.length), args);
+         var compounder=matches[0].trim();
+         var index=s.indexOf(compounder);
+         var firstPredicateString=s.substring(0, index);
+         var secondPredicateString=s.substring(index+compounder.length);
+         var firstPredicate=Predicate.parse(firstPredicateString, args);
+         var secondPredicate=Predicate.parse(secondPredicateString, args);
 
          predicate=new CompoundPredicate(compounder, [firstPredicate, secondPredicate]);
-      }
-      else // false
-      {
-         var expression=Expression.parse(s);
-         predicate=new ExpressionPredicate(expression);
       }
 
       return predicate;
