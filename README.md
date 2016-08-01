@@ -13,6 +13,6 @@ npm install collinbrewer/predicate -S
 Usage
 -----
 ```js
-let predicate = Predicate.parse('firstName BEGINSWITH "C" && rank>9');
-let satisfies = predicate.evaluateWithObject(author); // returns true
+let predicate = Predicate.parse('name BEGINSWITH "C" && rank>9');
+let satisfies = predicate.evaluateWithObject({name:'Collin', rank:12}); // returns true
 ```

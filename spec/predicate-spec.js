@@ -24,6 +24,12 @@ describe("Predicate", function(){
          predicate.should.have.property("subpredicates");
          predicate.subpredicates.should.have.length(2);
       });
+
+      it('maintain substitution variables', function(){
+         var predicate=Predicate.parse('$substitutedVariable==3', {substitutedVariable:3});
+
+         predicate.evaluateWithObject({}).should.equal(true);
+      });
    });
 
    context("#evaluateWithObject", function(){

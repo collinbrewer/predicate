@@ -1,13 +1,5 @@
 var Expression=require("expression");
 
-// if(typeof(exports)==="object" && typeof(define)!=="function"){
-//    var define=function(id, deps, factory){
-//       require(deps);
-//       var mod=factory(require, exports, module);
-//       mod || (mod=exports);
-//    };
-// }
-
 (function(root){
 
    var regex=/[\b\s](&&|and|\|\||or)[\b\s]/gi;
@@ -66,18 +58,12 @@ var Expression=require("expression");
    };
 
    CompoundPredicate.and=function(){
-
-      // var subs=
-
       return new CompoundPredicate("and", [].slice.call(arguments));
    };
 
    CompoundPredicate.or=function(){
       return CompoundPredicate.apply(null, ["or"].concat(arguments));
    };
-
-   // $properties: ["subpredicates", "type"],
-
 
    CompoundPredicate.prototype.copy=function(){
       var subs=[];
