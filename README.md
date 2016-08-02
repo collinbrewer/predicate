@@ -1,6 +1,7 @@
 Predicate
 =========
 [![Dependency Status](https://img.shields.io/david/collinbrewer/predicate/master.svg)](https://david-dm.org/collinbrewer/predicate.svg)
+[![Build Status](https://img.shields.io/travis/collinbrewer/predicate.svg)](https://travis-ci.org/collinbrewer/predicate)
 
 A Javascript utility for evaluating objects against a set of criteria.
 

@@ -23,6 +23,10 @@ Predicate.register=function(PredicateClass){
 // currently handles compound and comparison predicates, does not handle nested predicates
 Predicate.parse=function(s, args){
 
+   if(typeof(s)!=='string' && ('evaluateWithObject' in s)) {
+      return s;
+   }
+
    var predicate;
 
    // clean er up a bit... this should probably be taken care of by each predicate class
