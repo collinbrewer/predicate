@@ -9,9 +9,7 @@ var compiledCache={};
 // var comparisonRegex=/(==|=|!=|<=|>=|<|>|between|contains|in|beginswith|endswith|like|matches)/i;
 // var compounderRegex=/[\b\s](&&|and|\|\||or)[\b\s]/gi;
 
-function Predicate()
-{
-
+function Predicate() {
 }
 
 var predicateClasses=[];
@@ -29,179 +27,19 @@ Predicate.parse=function(s, args){
 
    var predicate;
 
-   // clean er up a bit... this should probably be taken care of by each predicate class
-   // s=s.trim();
-
-   for(var i=0, l=predicateClasses.length, PredicateClass; i<l, (PredicateClass=predicateClasses[i]); i++)
-   {
-      if((predicate=PredicateClass.parse(s)))
-      {
+   for(var i=0, l=predicateClasses.length, PredicateClass; i<l, (PredicateClass=predicateClasses[i]); i++) {
+      if((predicate=PredicateClass.parse(s, args))) {
          break;
       }
    }
 
-
    // NOTE: I'm not sure if this is how it should work, can we evaluate the substitution variables ahead of time?
    //    enquoting all the variables should trigger the parser to treat them as constants, however they would no longer be variable expressions
-   if(args && args.constructor!==Array)
-   {
+   if(args && args.constructor!==Array) {
       predicate._substitutionVariables=args;
    }
 
-
    return predicate;
-
-   var p, i, l, c;
-
-   // we aren't using a real parser yet so we're hacking around issues... one of which is quoted strings that should escape the compounder and predicate operators, for example:
-   //    keypath==null AND 'Frank and Beans'
-   // this is a compounded, comparison predicate, but will incorrectly parse because the 'and' in 'Frank and Beans' will be treated is a compounder, rather than the constant strinv value, "Frank and Beans"
-   // we should use a parser to read the state up to 'Frank and Beans' so that we'd know that the "and" is part of the constant value, but for now, we'll do a simple version of that with some sleight of hand
-   // if we find a quoted string, we'll replace it with a special character before we continue parsing, then when we're done, we'll integrate the values back in...
-   // so
-   //    keypath1==null AND keypath2=='Frank and Beans'
-   // will become
-   //    keypath1==null AND keypath2=='???'
-   // which will correctly be parsed as
-   //    [{left:"keypath", operator:"==", right:null}, "AND", {left:"keypath2", operator:"==", right:"???"}]
-   // then we'll use *substituteVariables* to integrate the values back in, which will yield
-   //    [{left:"keypath", operator:"==", right:null}, "AND", {left:"keypath2", operator:"==", right:'Frank and Beans'}]
-
-   if(!s)
-   {
-      return new Predicate(); // why not null?
-   }
-   else if(!s.evaluateWithObject)
-   {
-      if(typeof(s)==="string")
-      {
-         s=s.trim();
-
-         // if args is an object, then it's not args it's vars, but we'll convert it to args
-         // if(args && args.constructor!==Array)
-         // {
-         //    console.log("before: ", s);
-
-         //    var vars=args,
-         //        args=[],
-         //        value, index=0, nextIndex;
-
-         //    console.log("vars: ", vars);
-
-         //    for(var key in vars)
-         //    {
-         //       nextIndex=s.indexOf("$" + key, index);
-
-         //       console.log("got index of: ", "$" + key, index);
-
-         //       if(index!==-1)
-         //       {
-         //          s=s.substr(0, nextIndex) + "?" + s.substring(nextIndex+key.length+1);
-         //          args.push(vars[key]);
-         //       }
-         //    }
-
-         //    console.log("after: ", s);
-         //    console.log("args: ", args);
-         // }
-
-         // p=Predicate._parsedCache[s]; // TODO: use Cache
-
-         if(!p)
-         {
-            // p=[];
-
-            /* FIXME: quoted strings need to be handled but this code caused lower level issues
-            var quotedStrings={};
-
-            for(i=0, l=s.length, c; i<l, (c=s[i]); i++)
-            {
-               if(c==="'" || c==='"')
-               {
-                  // console.log("   c: ", c);
-
-                  for(var j=i+1, c1; j<l, (c1=s[j]); j++)
-                  {
-                     // console.log("      c1: ", c1);
-                     if(c1===c)
-                     {
-                        var key=.Util.getUUID().replace(/-/g, ""),
-                            value=s.substring(i, j+1);
-
-                        quotedStrings[key]=value;
-
-                        s=s.substring(0, i) + "$" + key + s.substring(j+1);
-
-                        i+=key.length;
-
-                        break;
-                     }
-
-                     // NOTE: not sure what to do if the quote isn't matched...?
-                  }
-               }
-            }*/
-
-            // console.log("found quoted strings: ", quotedStrings);
-            // console.log("substituted: ", s);
-
-            var matches=s.match(compounderRegex);
-
-            if(matches)
-            {
-               p=CompoundPredicate.parse(s, args);
-            }
-            else
-            {
-               //console.log("parsing hrcomparisonpredicate string: ", s);
-               // p.push(Predicate._parseComparisonPredicate(s));
-               // p.push(ComparisonPredicate.parse(s));
-               p=ComparisonPredicate.parse(s, args);
-            }
-
-            //console.log("caching parsed predicate for key: ", s);
-
-            // re-integrate substitutions
-            // p=Predicate.substituteVariables(p, quotedStrings);
-
-            // console.log("final: ", p);
-
-            Predicate._parsedCache[s]=p; // store the parsed predicate in the cache
-         }
-         else
-         {
-            // console.log("using parsed predicate from cache for key: ", s);
-            // p._substitutionVariables=
-         }
-      }
-      else if("left" in s)
-      {
-         // p=new ComparisonPredicate(s);
-         p=s.copy();
-      }
-      else
-      {
-         // p=new CompoundPredicate(s);
-         p=s.copy();
-      }
-   }
-   else if(s.left)
-   {
-
-   }
-   else
-   {
-      p=s;
-   }
-
-   // NOTE: I'm not sure if this is how it should work, can we evaluate the substitution variables ahead of time?
-   //    enquoting all the variables should trigger the parser to treat them as constants, however they would no longer be variable expressions
-   if(args && args.constructor!==Array)
-   {
-      p._substitutionVariables=args;
-   }
-
-   return p;
 };
 
 // expression: self, employee.title
