@@ -9,7 +9,7 @@ A Javascript utility for evaluating objects against a set of criteria.
 Installation
 ------------
 ```sh
-npm install collinbrewer/predicate -S
+npm install @collinbrewer/predicate -S
 ```
 
 Usage
