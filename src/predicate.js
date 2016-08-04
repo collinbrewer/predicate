@@ -19,7 +19,7 @@ Predicate.register=function(PredicateClass){
 };
 
 // currently handles compound and comparison predicates, does not handle nested predicates
-Predicate.parse=function(s, args){
+Predicate.parse=function(s, vars){
 
    if(typeof(s)!=='string' && ('evaluateWithObject' in s)) {
       return s;
@@ -28,16 +28,16 @@ Predicate.parse=function(s, args){
    var predicate;
 
    for(var i=0, l=predicateClasses.length, PredicateClass; i<l, (PredicateClass=predicateClasses[i]); i++) {
-      if((predicate=PredicateClass.parse(s, args))) {
+      if((predicate=PredicateClass.parse(s, vars))) {
          break;
       }
    }
 
-   // NOTE: I'm not sure if this is how it should work, can we evaluate the substitution variables ahead of time?
-   //    enquoting all the variables should trigger the parser to treat them as constants, however they would no longer be variable expressions
-   if(args && args.constructor!==Array) {
-      predicate._substitutionVariables=args;
-   }
+   // // NOTE: I'm not sure if this is how it should work, can we evaluate the substitution variables ahead of time?
+   // //    enquoting all the variables should trigger the parser to treat them as constants, however they would no longer be variable expressions
+   // if(args && args.constructor!==Array) {
+   //    predicate._substitutionVariables=args;
+   // }
 
    return predicate;
 };

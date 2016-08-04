@@ -40,7 +40,7 @@ function CompoundPredicate(type, a)
    this.subpredicates=subpredicates;
 }
 
-CompoundPredicate.parse=function(s, args){
+CompoundPredicate.parse=function(s, vars){
 
    var predicate=null,
        i=0, l=s.length,
@@ -52,8 +52,8 @@ CompoundPredicate.parse=function(s, args){
       var index=s.indexOf(compounder);
       var firstPredicateString=s.substring(0, index);
       var secondPredicateString=s.substring(index+compounder.length);
-      var firstPredicate=parsePredicate(firstPredicateString, args);
-      var secondPredicate=parsePredicate(secondPredicateString, args);
+      var firstPredicate=parsePredicate(firstPredicateString, vars);
+      var secondPredicate=parsePredicate(secondPredicateString, vars);
 
       predicate=new CompoundPredicate(compounder, [firstPredicate, secondPredicate]);
    }

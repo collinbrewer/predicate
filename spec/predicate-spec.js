@@ -22,11 +22,6 @@ describe("Predicate", function(){
          predicate.subpredicates.should.have.length(2);
       });
 
-      it('should maintain substitution variables', function(){
-         var predicate=Predicate.parse('$three==3 && values.number>$four', {three:3, four:4});
-         predicate.evaluateWithObject({values:{number:10}}).should.equal(true);
-      });
-
       it('returns a predicate when an existing predicate is provided', function(){
          var predicate=Predicate.parse('1');
          var existingPredicate=Predicate.parse(predicate);
@@ -51,6 +46,16 @@ describe("Predicate", function(){
 
       it("returns true", function(){
          Predicate.parse("1==1").evaluateWithObject({}).should.equal(true);
+      });
+
+      it('should maintain substitution variables', function(){
+         var p1=Predicate.parse('$a==3 && values.number>$b', {a:3, b:4});
+         var p2=Predicate.parse('$a==3 && values.number>$b', {a:10, b:4});
+
+
+         p1.evaluateWithObject({values:{number:5}}).should.be.true;
+         // p2.evaluateWithObject({values:{number:5}}).should.be.false;
+
       });
    });
 });

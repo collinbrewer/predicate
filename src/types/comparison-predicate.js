@@ -41,7 +41,7 @@ function ComparisonPredicate(left, right, operator)
 }
 
 // returns an object in {left, operator, right} format
-ComparisonPredicate.parse=function(s, args){
+ComparisonPredicate.parse=function(s, vars){
 
    // console.group("parsing as comparison predicate: ", s);
 
@@ -62,7 +62,7 @@ ComparisonPredicate.parse=function(s, args){
       }*/
 
       //p={left:Expression.parse(s.substr(0, i).trim()), operator:m, right:Expression.parse(r)};
-      p=new ComparisonPredicate(Expression.parse(s.substr(0, i).trim(), args), Expression.parse(r, args), m);
+      p=new ComparisonPredicate(Expression.parse(s.substr(0, i).trim(), vars), Expression.parse(r, vars), m);
    }
 
    return p;
