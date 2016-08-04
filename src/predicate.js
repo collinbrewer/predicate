@@ -1,6 +1,6 @@
 // http://developer.apple.com/library/mac/#documentation/cocoa/conceptual/Predicates/Articles/pBNF.html
 
-var Expression=require("expression");
+var Expression=require("@collinbrewer/expression");
 
 var parsedCache={};
 var compiledCache={};

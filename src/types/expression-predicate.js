@@ -1,4 +1,4 @@
-var Expression=require("expression");
+var Expression=require("@collinbrewer/expression");
 
 function ExpressionPredicate(expression){
    this.expression=expression;

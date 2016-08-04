@@ -1,4 +1,4 @@
-var Expression=require("expression");
+var Expression=require("@collinbrewer/expression");
 var Predicate=require('../predicate.js');
 
 var regex=/[\b\s](&&|and|\|\||or)[\b\s]/gi;

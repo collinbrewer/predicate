@@ -1,5 +1,5 @@
 {
-  "name": "predicate",
+  "name": "@collinbrewer/predicate",
   "version": "0.1.1",
   "description": "A Javascript utility for evaluating objects against a set of criteria.",
   "main": "index.js",
@@ -20,6 +20,6 @@
     "mocha": "^2.5.3"
   },
   "dependencies": {
-    "expression": "github:collinbrewer/expression"
+    "@collinbrewer/expression": "^0.1.1"
   }
 }
