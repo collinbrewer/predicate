@@ -1,11 +1,12 @@
 {
   "name": "@collinbrewer/predicate",
-  "version": "0.1.2",
+  "version": "0.1.1",
   "description": "A Javascript utility for evaluating objects against a set of criteria.",
   "main": "index.js",
   "scripts": {
     "test": "mocha spec",
-    "test:dev": "mocha spec --watch"
+    "test:dev": "mocha spec --watch",
+    "test:cov": "istanbul cover _mocha -- spec"
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,7 @@
     "chai": "^3.5.0",
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^1.2.0",
+    "istanbul": "^0.4.4",
     "mocha": "^2.5.3"
   },
   "dependencies": {
