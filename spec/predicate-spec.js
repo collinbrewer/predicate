@@ -52,9 +52,8 @@ describe("Predicate", function(){
          var p1=Predicate.parse('$a==3 && values.number>$b', {a:3, b:4});
          var p2=Predicate.parse('$a==3 && values.number>$b', {a:10, b:4});
 
-
          p1.evaluateWithObject({values:{number:5}}).should.be.true;
-         // p2.evaluateWithObject({values:{number:5}}).should.be.false;
+         p2.evaluateWithObject({values:{number:5}}).should.be.false;
 
       });
    });

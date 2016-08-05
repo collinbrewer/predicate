@@ -5,12 +5,12 @@ function ExpressionPredicate(expression){
 }
 
 ExpressionPredicate.prototype.evaluateWithObject=function(o, vars){
-   return this.expression.getValueWithObject(o);
+   return this.expression.getValueWithObject(o, vars || this.vars);
 };
 
-ExpressionPredicate.parse = function (s) {
+ExpressionPredicate.parse = function (s, vars) {
    var predicate;
-   var expression=Expression.parse(s);
+   var expression=Expression.parse(s, vars);
 
    if(expression) {
       predicate=new ExpressionPredicate(expression);
