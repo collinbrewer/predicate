@@ -16,9 +16,6 @@ function CompoundPredicate (type, a) {
 
 	var subs = [];
 	var subpredicates = [];
-	var i;
-	var l = subs;
-	var sub;
 
 	if (a.constructor === Array) {
 		subs = a;
@@ -27,9 +24,14 @@ function CompoundPredicate (type, a) {
 		subs = [].slice.call(arguments, 1);
 	}
 
+	var i;
+	var l = subs.length;
+	var sub;
+
 	for (i = 0; i < l; i++) {
 		sub = subs[i];
-		if (!sub.evaluateWithObject) {
+
+		if (!('evaluateWithObject' in sub)) {
 			sub = parsePredicate(sub, a);
 		}
 

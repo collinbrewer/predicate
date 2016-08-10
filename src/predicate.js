@@ -25,11 +25,11 @@ Predicate.parse = function (s, vars) {
 
 	var predicate;
 	var i;
-	var l=predicateClasses.length;
+	var l = predicateClasses.length;
 	var PredicateClass;
 
-	for (i = 0; i < l; i++)
-	   PredicateClass = predicateClasses[i]
+	for (i = 0; i < l; i++) {
+		PredicateClass = predicateClasses[i];
 		if ((predicate = PredicateClass.parse(s, vars))) {
 			break;
 		}
