@@ -1,60 +1,56 @@
-var should=require("chai").should();
+var expect = require('chai').expect;
 
-var Predicate=require("../index");
+var Predicate = require('../index');
 
-describe("Predicate", function(){
+describe('Predicate', function () {
+	context('#parse', function () {
+		it('returns a compound predicate', function () {
+			var predicate = Predicate.parse('1 && 1');
+			expect(predicate).to.have.property('subpredicates');
+		});
 
-   context("#parse", function(){
+		it('returns a comparison predicate', function () {
+			var predicate = Predicate.parse('1==1');
+			expect(predicate.type).to.equal('comparison');
+		});
 
-      it("returns a compound predicate", function(){
-         var predicate=Predicate.parse("1 && 1");
-         predicate.should.have.property("subpredicates");
-      });
+		it('returns a complex compound predicate', function () {
+			var predicate = Predicate.parse('1==1 && 2==2');
+			expect(predicate).to.have.property('subpredicates');
+			expect(predicate.subpredicates).to.have.length(2);
+		});
 
-      it("returns a comparison predicate", function(){
-         var predicate=Predicate.parse("1==1");
-         predicate.type.should.equal("comparison");
-      });
+		it('returns a predicate when an existing predicate is provided', function () {
+			var predicate = Predicate.parse('1');
+			var existingPredicate = Predicate.parse(predicate);
+			expect(predicate).to.not.equal(undefined);
+		});
+	});
 
-      it("returns a complex compound predicate", function(){
-         var predicate=Predicate.parse("1==1 && 2==2");
-         predicate.should.have.property("subpredicates");
-         predicate.subpredicates.should.have.length(2);
-      });
+	context('#evaluateWithObject', function () {
+		it('returns true', function () {
+			expect(Predicate.parse('1 && 1').evaluateWithObject({})).to.equal(true);
+		});
 
-      it('returns a predicate when an existing predicate is provided', function(){
-         var predicate=Predicate.parse('1');
-         var existingPredicate=Predicate.parse(predicate);
-         predicate.should.not.equal(undefined);
-      });
-   });
+		it('returns false', function () {
+			var predicate = Predicate.parse('1 && false');
+			expect(predicate.evaluateWithObject({})).to.equal(false);
+		});
 
-   context("#evaluateWithObject", function(){
+		it('returns true', function () {
+			expect(Predicate.parse('1==1').evaluateWithObject({})).to.equal(true);
+		});
 
-      it("returns true", function(){
-         Predicate.parse("1 && 1").evaluateWithObject({}).should.equal(true);
-      });
+		it('returns true', function () {
+			expect(Predicate.parse('1==1').evaluateWithObject({})).to.equal(true);
+		});
 
-      it("returns false", function(){
-         var predicate=Predicate.parse("1 && false");
-         predicate.evaluateWithObject({}).should.equal(false);
-      });
+		it('should maintain substitution variables', function () {
+			var p1 = Predicate.parse('$a==3 && values.number>$b', {a: 3, b: 4});
+			var p2 = Predicate.parse('$a==3 && values.number>$b', {a: 10, b: 4});
 
-      it("returns true", function(){
-         Predicate.parse("1==1").evaluateWithObject({}).should.equal(true);
-      });
-
-      it("returns true", function(){
-         Predicate.parse("1==1").evaluateWithObject({}).should.equal(true);
-      });
-
-      it('should maintain substitution variables', function(){
-         var p1=Predicate.parse('$a==3 && values.number>$b', {a:3, b:4});
-         var p2=Predicate.parse('$a==3 && values.number>$b', {a:10, b:4});
-
-         p1.evaluateWithObject({values:{number:5}}).should.be.true;
-         p2.evaluateWithObject({values:{number:5}}).should.be.false;
-
-      });
-   });
+			expect(p1.evaluateWithObject({values: {number: 5}})).to.be.true;
+			expect(p2.evaluateWithObject({values: {number: 5}})).to.be.false;
+		});
+	});
 });

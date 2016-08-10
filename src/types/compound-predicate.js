@@ -1,236 +1,221 @@
-var Expression=require("@collinbrewer/expression");
-var Predicate=require('../predicate.js');
+var regex = /[\b\s](&&|and|\|\||or)[\b\s]/gi;
+var shorthandTypes = {
+	'&&': 'and',
+	'||': 'or'
+};
 
-var regex=/[\b\s](&&|and|\|\||or)[\b\s]/gi;
-var shorthandTypes={"&&":"and", "||":"or"};
-
-function parsePredicate() {
-   var Predicate=require('../predicate.js');
-   return Predicate.parse.apply(Predicate.parse, arguments);
+function parsePredicate () {
+	var Predicate = require('../predicate.js');
+	return Predicate.parse.apply(Predicate.parse, arguments);
 }
 
-function CompoundPredicate(type, a)
-{
-   type=(typeof(type)==="string" ? type : type[0]);
+function CompoundPredicate (type, a) {
+	type = (typeof type === 'string' ? type : type[0]);
 
-   this.type=(shorthandTypes[type] || type.toLowerCase());
+	this.type = (shorthandTypes[type] || type.toLowerCase());
 
-   var subs=[],
-       subpredicates=[];
+	var subs = [];
+	var subpredicates = [];
+	var i;
+	var l = subs;
+	var sub;
 
-   if(a.constructor===Array)
-   {
-      subs=a;
-   }
-   else
-   {
-      subs=[].slice.call(arguments, 1);
-   }
+	if (a.constructor === Array) {
+		subs = a;
+	}
+	else {
+		subs = [].slice.call(arguments, 1);
+	}
 
-   for(var i=0, l=subs, sub; i<l, (sub=subs[i]); i++)
-   {
-      if(!sub.evaluateWithObject)
-      {
-         sub=parsePredicate(sub, a);
-      }
+	for (i = 0; i < l; i++) {
+		sub = subs[i];
+		if (!sub.evaluateWithObject) {
+			sub = parsePredicate(sub, a);
+		}
 
-      subpredicates.push(sub);
-   }
+		subpredicates.push(sub);
+	}
 
-   this.subpredicates=subpredicates;
+	this.subpredicates = subpredicates;
 }
 
-CompoundPredicate.parse=function(s, vars){
+CompoundPredicate.parse = function (s, vars) {
+	var predicate = null;
+	var matches = s.match(regex);
 
-   var predicate=null,
-       i=0, l=s.length,
-       matches=s.match(regex);
+	if (matches) {
+		var compounder = matches[0].trim();
+		var index = s.indexOf(compounder);
+		var firstPredicateString = s.substring(0, index);
+		var secondPredicateString = s.substring(index + compounder.length);
+		var firstPredicate = parsePredicate(firstPredicateString, vars);
+		var secondPredicate = parsePredicate(secondPredicateString, vars);
 
-   if(matches) // 1 && false
-   {
-      var compounder=matches[0].trim();
-      var index=s.indexOf(compounder);
-      var firstPredicateString=s.substring(0, index);
-      var secondPredicateString=s.substring(index+compounder.length);
-      var firstPredicate=parsePredicate(firstPredicateString, vars);
-      var secondPredicate=parsePredicate(secondPredicateString, vars);
+		predicate = new CompoundPredicate(compounder, [firstPredicate, secondPredicate]);
+	}
 
-      predicate=new CompoundPredicate(compounder, [firstPredicate, secondPredicate]);
-   }
-
-   return predicate;
+	return predicate;
 };
 
-CompoundPredicate.and=function(){
-   return new CompoundPredicate("and", [].slice.call(arguments));
+CompoundPredicate.and = function () {
+	return new CompoundPredicate('and', [].slice.call(arguments));
 };
 
-CompoundPredicate.or=function(){
-   return CompoundPredicate.apply(null, ["or"].concat(arguments));
+CompoundPredicate.or = function () {
+	return CompoundPredicate.apply(null, ['or'].concat(arguments));
 };
 
-CompoundPredicate.prototype.copy=function(){
-   var subs=[];
+CompoundPredicate.prototype.copy = function () {
+	var subs = [];
 
-   // TODO: I think we can just use .Object.copy(this.subpredicates) here...
-   for(var i=0, subpredicates=this.subpredicates, l=subpredicates.length; i<l; i++)
-   {
-      subs.push(subpredicates[i].copy());
-   }
+	// TODO: I think we can just use .Object.copy(this.subpredicates) here...
+	for (var i = 0, subpredicates = this.subpredicates, l = subpredicates.length; i < l; i++) {
+		subs.push(subpredicates[i].copy());
+	}
 
-   return new CompoundPredicate(this.type, subs);
+	return new CompoundPredicate(this.type, subs);
 };
 
-CompoundPredicate.prototype._predicateReferencesKeyPath=function(){
+CompoundPredicate.prototype._predicateReferencesKeyPath = function () {
+	var p = this.subpredicates;
 
-   var p=this.subpredicates;
+	for (var i = 0, l = p.length; i < l; i++) {
+		if (p[i]._predicateReferencesKeyPath()) {
+			return true;
+		}
+	}
 
-   for(var i=0, l=p.length; i<l; i++)
-   {
-      if(p[i]._predicateReferencesKeyPath())
-      {
-         return true;
-      }
-   }
-
-   return false;
+	return false;
 };
 
-CompoundPredicate.prototype._removeExpressionsReferencingKeyPaths=function(){
+CompoundPredicate.prototype._removeExpressionsReferencingKeyPaths = function () {
+	var ps = this.subpredicates;
 
-   var ps=this.subpredicates;
+	for (var i = 0, l = ps.length; i < l; i++) {
+		ps[i]._removeExpressionsReferencingKeyPaths();
 
-   for(var i=0, l=ps.length; i<l; i++)
-   {
-      ps[i]._removeExpressionsReferencingKeyPaths();
+		// if(i%2===0)
+		{
+			if (ps[i]._predicateReferencesKeyPath()) {
+				// if(i<l-1) // if there is a next compound, skip it
+				// {
+				//	 i++;
+				// }
+				// else if(i>0) // if there is a previous compound, skip it
+				{
+					ps.splice(ps.length - 1, 1);
+				}
+			}
+			// else
+			// {
+			//	 ps=ps.concat(ps[i]._removeExpressionsReferencingKeyPaths());
+			// }
+		}
+		// else
+		// {
+		//	 ps.push(p[i]);
+		// }
+	}
 
-      // if(i%2===0)
-      {
-         if(ps[i]._predicateReferencesKeyPath())
-         {
-            // if(i<l-1) // if there is a next compound, skip it
-            // {
-            //    i++;
-            // }
-            // else if(i>0) // if there is a previous compound, skip it
-            {
-               ps.splice(ps.length-1, 1);
-            }
-         }
-         // else
-         // {
-         //    ps=ps.concat(ps[i]._removeExpressionsReferencingKeyPaths());
-         // }
-      }
-      // else
-      // {
-      //    ps.push(p[i]);
-      // }
-   }
-
-   // this.subpredicates=ps;
-},
-
-CompoundPredicate.prototype._removeExpressionsReferencingKeys=function(ks, ps){
-
-   // console.log("remove expressions referencing keys: ", p, ks);
-
-   p=this.subpredicates;
-
-   ps || (ps=[]);
-
-   for(var i=0, l=p.length; i<l; i++)
-   {
-      if(i%2===0)
-      {
-         if(p[i]._predicateReferencesKeys(ks))
-         {
-            if(i<l-1) // if there is a next compound, skip it
-            {
-               i++;
-            }
-            else if(i>0) // if there is a previous compound, skip it
-            {
-               ps.splice(ps.length-1, 1);
-            }
-         }
-         else
-         {
-            ps=ps.concat(p[i]._removeExpressionsReferencingKeys(ks));
-         }
-      }
-      else
-      {
-         ps.push(p[i]);
-      }
-   }
-
-   return ps;
+	// this.subpredicates=ps;
 };
 
-CompoundPredicate.prototype.getDependentKeyPathExpressions=function(){
+CompoundPredicate.prototype._removeExpressionsReferencingKeys = function (ks, ps) {
+	// console.log("remove expressions referencing keys: ", p, ks);
 
-   var expressions=[];
-   var subpredicates=this.subpredicates;
+	var p = this.subpredicates;
 
-   for(var i=0, l=subpredicates.length, subpredicate; i<l, (subpredicate=subpredicates[i]); i++)
-   {
-      expressions=expressions.concat(subpredicate.getDependentKeyPathExpressions());
-   }
+	ps || (ps = []);
 
-   // var dependent=this.subpredicates.map(function(predicate){ return predicate.getDependentKeyPathExpressions(); });
+	for (var i = 0, l = p.length; i < l; i++) {
+		if (i % 2 === 0) {
+			if (p[i]._predicateReferencesKeys(ks)) {
+				if (i < l - 1) { // if there is a next compound, skip it
+					i++;
+				}
+				else if (i > 0) { // if there is a previous compound, skip it
+					ps.splice(ps.length - 1, 1);
+				}
+			}
+			else {
+				ps = ps.concat(p[i]._removeExpressionsReferencingKeys(ks));
+			}
+		}
+		else {
+			ps.push(p[i]);
+		}
+	}
 
-   return expressions;
+	return ps;
 };
 
-CompoundPredicate.prototype.stringify=function(){
-   return this.subpredicates.map(function(predicate){ return predicate.stringify(); }).join(" " + this.type + " ");
+CompoundPredicate.prototype.getDependentKeyPathExpressions = function () {
+	var expressions = [];
+	var subpredicates = this.subpredicates;
+	var i;
+	var l = subpredicates.length;
+	var subpredicate;
+
+	for (i = 0; i < l; i++) {
+		subpredicate = subpredicates[i];
+		expressions = expressions.concat(subpredicate.getDependentKeyPathExpressions());
+	}
+
+	// var dependent=this.subpredicates.map(function(predicate){ return predicate.getDependentKeyPathExpressions(); });
+
+	return expressions;
+};
+
+CompoundPredicate.prototype.stringify = function () {
+	return this.subpredicates.map(function (predicate) {
+		return predicate.stringify();
+	}).join(' ' + this.type + ' ');
 };
 
 // priority is equal to 1 and date due is today property3 and lastProperty is between 1 and 2
 // proper
 // x, y, and z
-CompoundPredicate.prototype.toLocaleString=function(){
-   return this.subpredicates.map(function(p){ return p.toLocaleString(); }).join(this.type);
+CompoundPredicate.prototype.toLocaleString = function () {
+	return this.subpredicates.map(function (p) {
+		return p.toLocaleString();
+	}).join(this.type);
 };
 
-CompoundPredicate.prototype.evaluateWithObject=function(o, vars){
+CompoundPredicate.prototype.evaluateWithObject = function (o, vars) {
+	vars || (vars = this._substitutionVariables);
 
-   vars || (vars=this._substitutionVariables);
+	var subpredicates = this.subpredicates;
+	var type = this.type;
+	var isAnd = (type === 'and');
+	var result = (isAnd);
+	var i;
+	var l = subpredicates.length;
+	var subpredicate;
 
-   var subpredicates=this.subpredicates,
-       type=this.type,
-       isAnd=type==="and",
-       result=(isAnd ? true : false),
-       truth;
+	for (i = 0; i < l; i++) {
+		subpredicate = subpredicates[i];
 
-   for(var i=0, l=subpredicates.length, subpredicate; i<l, (subpredicate=subpredicates[i]); i++)
-   {
-      if(subpredicate.evaluateWithObject(o, vars))
-      {
-         if(!isAnd)
-         {
-            return true;
-         }
-      }
-      else
-      {
-         if(isAnd)
-         {
-            return false;
-         }
-      }
-   }
+		if (subpredicate.evaluateWithObject(o, vars)) {
+			if (!isAnd) {
+				return true;
+			}
+		}
+		else {
+			if (isAnd) {
+				return false;
+			}
+		}
+	}
 
-   return result;
+	return result;
 };
 
-CompoundPredicate.prototype.and=function(predicate){
-   return new CompoundPredicate("and", [this, predicate]);
+CompoundPredicate.prototype.and = function (predicate) {
+	return new CompoundPredicate('and', [this, predicate]);
 };
 
-CompoundPredicate.prototype.or=function(predicate){
-   return new CompoundPredicate("or", [this, predicate]);
+CompoundPredicate.prototype.or = function (predicate) {
+	return new CompoundPredicate('or', [this, predicate]);
 };
 
 module.exports = CompoundPredicate;
