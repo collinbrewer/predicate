@@ -17,12 +17,10 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "coveralls": "^2.11.12",
-    "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^1.2.0",
     "istanbul": "^0.4.4",
     "mocha": "^2.5.3"
   },
   "dependencies": {
-    "@collinbrewer/expression": "^0.1.1"
+    "@collinbrewer/expression": "^0.3.0"
   }
 }
