@@ -1,6 +1,8 @@
 language: node_js
 node_js:
 - '6'
+before_deploy:
+- npm access public
 deploy:
   provider: npm
   email: collin@brewer-collective.com
@@ -12,3 +14,4 @@ deploy:
 after_script:
 - npm run test:cov
 - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
+- CODECLIMATE_REPO_TOKEN=70b0e801337125aa8c7cf92fa6f8667e8003af9b8ec05eaac4f7d45e546d968d codeclimate-test-reporter < lcov.info

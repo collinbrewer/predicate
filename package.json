@@ -16,6 +16,7 @@
   "license": "ISC",
   "devDependencies": {
     "chai": "^3.5.0",
+    "codeclimate-test-reporter": "^0.3.3",
     "coveralls": "^2.11.12",
     "eslint": "^3.2.2",
     "eslint-config-happiness": "^5.3.1",
