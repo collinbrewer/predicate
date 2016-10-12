@@ -37,14 +37,6 @@ describe('Predicate', function () {
 			expect(predicate.evaluateWithObject({})).to.equal(false);
 		});
 
-		it('returns true', function () {
-			expect(Predicate.parse('1==1').evaluateWithObject({})).to.equal(true);
-		});
-
-		it('returns true', function () {
-			expect(Predicate.parse('1==1').evaluateWithObject({})).to.equal(true);
-		});
-
 		it('should maintain substitution variables', function () {
 			var p1 = Predicate.parse('$a==3 && values.number>$b', {a: 3, b: 4});
 			var p2 = Predicate.parse('$a==3 && values.number>$b', {a: 10, b: 4});

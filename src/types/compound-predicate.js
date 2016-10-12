@@ -1,48 +1,39 @@
+var ComparisonPredicate = require('./comparison-predicate.js');
+
 var regex = /[\b\s](&&|and|\|\||or)[\b\s]/gi;
-var shorthandTypes = {
+var shorthandGates = {
 	'&&': 'and',
 	'||': 'or'
 };
 
-function parsePredicate () {
+function ensurePredicate (p, args) {
 	var Predicate = require('../predicate.js');
-	return Predicate.parse.apply(Predicate.parse, arguments);
-}
+	var type = typeof p;
 
-function CompoundPredicate (type, a) {
-	type = (typeof type === 'string' ? type : type[0]);
-
-	this.type = (shorthandTypes[type] || type.toLowerCase());
-
-	var subs = [];
-	var subpredicates = [];
-
-	if (a.constructor === Array) {
-		subs = a;
+	if (type === 'string') {
+		return Predicate.parse(p, arguments);
 	}
 	else {
-		subs = [].slice.call(arguments, 1);
+		return (p !== null && type === 'object' && ('evaluateWithObject' in p) ? p : new ComparisonPredicate(p, args));
 	}
+}
 
-	var i;
-	var l = subs.length;
-	var sub;
+/**
+ * Creates an AND/OR compound predicate
+ * @param {String} gate The logical gate operation, AND/OR/&&/||
+ * @param {Array} a    An array of subpredicates to compound
+ */
+function CompoundPredicate (gate, a) {
+	// type = (typeof type === 'string' ? type : type[0]);
 
-	for (i = 0; i < l; i++) {
-		sub = subs[i];
-
-		if (!('evaluateWithObject' in sub)) {
-			sub = parsePredicate(sub, a);
-		}
-
-		subpredicates.push(sub);
-	}
-
-	this.subpredicates = subpredicates;
+	this.gate = (shorthandGates[gate] || gate.toLowerCase());
+	this.subpredicates = a.map(function (sub) {
+		return ensurePredicate(sub);
+	});
 }
 
 CompoundPredicate.parse = function (s, vars) {
-	var predicate = null;
+	var predicate;
 	var matches = s.match(regex);
 
 	if (matches) {
@@ -50,8 +41,8 @@ CompoundPredicate.parse = function (s, vars) {
 		var index = s.indexOf(compounder);
 		var firstPredicateString = s.substring(0, index);
 		var secondPredicateString = s.substring(index + compounder.length);
-		var firstPredicate = parsePredicate(firstPredicateString, vars);
-		var secondPredicate = parsePredicate(secondPredicateString, vars);
+		var firstPredicate = ensurePredicate(firstPredicateString, vars);
+		var secondPredicate = ensurePredicate(secondPredicateString, vars);
 
 		predicate = new CompoundPredicate(compounder, [firstPredicate, secondPredicate]);
 	}
@@ -67,103 +58,26 @@ CompoundPredicate.or = function () {
 	return CompoundPredicate.apply(null, ['or'].concat(arguments));
 };
 
+CompoundPredicate.prototype.getGate = function () {
+	return this.gate;
+};
+
+CompoundPredicate.prototype.getSubpredicates = function () {
+	return this.subpredicates;
+};
+
 CompoundPredicate.prototype.copy = function () {
-	var subs = [];
-
-	// TODO: I think we can just use .Object.copy(this.subpredicates) here...
-	for (var i = 0, subpredicates = this.subpredicates, l = subpredicates.length; i < l; i++) {
-		subs.push(subpredicates[i].copy());
-	}
-
-	return new CompoundPredicate(this.type, subs);
-};
-
-CompoundPredicate.prototype._predicateReferencesKeyPath = function () {
-	var p = this.subpredicates;
-
-	for (var i = 0, l = p.length; i < l; i++) {
-		if (p[i]._predicateReferencesKeyPath()) {
-			return true;
-		}
-	}
-
-	return false;
-};
-
-CompoundPredicate.prototype._removeExpressionsReferencingKeyPaths = function () {
-	var ps = this.subpredicates;
-
-	for (var i = 0, l = ps.length; i < l; i++) {
-		ps[i]._removeExpressionsReferencingKeyPaths();
-
-		// if(i%2===0)
-		{
-			if (ps[i]._predicateReferencesKeyPath()) {
-				// if(i<l-1) // if there is a next compound, skip it
-				// {
-				//	 i++;
-				// }
-				// else if(i>0) // if there is a previous compound, skip it
-				{
-					ps.splice(ps.length - 1, 1);
-				}
-			}
-			// else
-			// {
-			//	 ps=ps.concat(ps[i]._removeExpressionsReferencingKeyPaths());
-			// }
-		}
-		// else
-		// {
-		//	 ps.push(p[i]);
-		// }
-	}
-
-	// this.subpredicates=ps;
-};
-
-CompoundPredicate.prototype._removeExpressionsReferencingKeys = function (ks, ps) {
-	// console.log("remove expressions referencing keys: ", p, ks);
-
-	var p = this.subpredicates;
-
-	ps || (ps = []);
-
-	for (var i = 0, l = p.length; i < l; i++) {
-		if (i % 2 === 0) {
-			if (p[i]._predicateReferencesKeys(ks)) {
-				if (i < l - 1) { // if there is a next compound, skip it
-					i++;
-				}
-				else if (i > 0) { // if there is a previous compound, skip it
-					ps.splice(ps.length - 1, 1);
-				}
-			}
-			else {
-				ps = ps.concat(p[i]._removeExpressionsReferencingKeys(ks));
-			}
-		}
-		else {
-			ps.push(p[i]);
-		}
-	}
-
-	return ps;
+	return new CompoundPredicate(this.gate, this.subpredicates.map(function (subpredicate) {
+		return subpredicate.copy();
+	}));
 };
 
 CompoundPredicate.prototype.getDependentKeyPathExpressions = function () {
 	var expressions = [];
-	var subpredicates = this.subpredicates;
-	var i;
-	var l = subpredicates.length;
-	var subpredicate;
 
-	for (i = 0; i < l; i++) {
-		subpredicate = subpredicates[i];
+	this.subpredicates.forEach(function (subpredicate) {
 		expressions = expressions.concat(subpredicate.getDependentKeyPathExpressions());
-	}
-
-	// var dependent=this.subpredicates.map(function(predicate){ return predicate.getDependentKeyPathExpressions(); });
+	});
 
 	return expressions;
 };
@@ -171,7 +85,7 @@ CompoundPredicate.prototype.getDependentKeyPathExpressions = function () {
 CompoundPredicate.prototype.stringify = function () {
 	return this.subpredicates.map(function (predicate) {
 		return predicate.stringify();
-	}).join(' ' + this.type + ' ');
+	}).join(' ' + this.gate + ' ');
 };
 
 // priority is equal to 1 and date due is today property3 and lastProperty is between 1 and 2
@@ -180,15 +94,15 @@ CompoundPredicate.prototype.stringify = function () {
 CompoundPredicate.prototype.toLocaleString = function () {
 	return this.subpredicates.map(function (p) {
 		return p.toLocaleString();
-	}).join(this.type);
+	}).join(' ' + this.gate + ' ');
 };
 
 CompoundPredicate.prototype.evaluateWithObject = function (o, vars) {
 	vars || (vars = this._substitutionVariables);
 
 	var subpredicates = this.subpredicates;
-	var type = this.type;
-	var isAnd = (type === 'and');
+	var gate = this.gate;
+	var isAnd = (gate === 'and');
 	var result = (isAnd);
 	var i;
 	var l = subpredicates.length;
@@ -219,5 +133,8 @@ CompoundPredicate.prototype.and = function (predicate) {
 CompoundPredicate.prototype.or = function (predicate) {
 	return new CompoundPredicate('or', [this, predicate]);
 };
+
+CompoundPredicate.AND = 'and';
+CompoundPredicate.OR = 'or';
 
 module.exports = CompoundPredicate;

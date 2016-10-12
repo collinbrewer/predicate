@@ -4,34 +4,56 @@ var Expression = require('@collinbrewer/expression');
 
 var regex = /(==|=|!=|<=|>=|<|>|between|contains|in|beginswith|endswith|like|matches)/i;
 
-// constructor is overloaded with multiple argument options:
-//	 left, operator, right
-//	 {"left", "operator", "right"}
-//	 TODO: left, right, selector
-//	 TODO: {"left", "right", "selector"}
+function ensureExpression (e) {
+	var type = typeof e;
+
+	if (type === 'string') {
+		return Expression.parse(e);
+	}
+	else {
+		return (e !== null && type === 'object' && ('getValueWithObject' in e) ? e : Expression.expressionForConstantValue(e));
+	}
+}
+
+function formatAsRegex (s) {
+	var regex = s;
+
+	// ? - matches one character, we use regex .{1,1}, so 'asd?' becomes 'asd.{1,1}' which matches asdf
+	regex = regex.replace(new RegExp('\\?', 'g'), '.{1,1}');
+
+	// * - matches 0 or more characters, we use regex .* so 'asd*' becomes 'asd.*' which matches asd, asdf, and asdfghjkl;
+	regex = regex.replace(new RegExp('\\*', 'g'), '.*');
+
+	return regex;
+}
+
+/**
+ * Creates a new predicate for comparing two expressions
+ * @param {Expression} left     The first expression to compare
+ * @param {Expression} right    The second expression to compare
+ * @param {String/function} operator A string representing a supported comparator or a function
+ */
 function ComparisonPredicate (left, right, operator) {
 	this.type = 'comparison';
 
-	if (arguments.length === 1) {
+	if (arguments.length === 1 && typeof arguments[0] === 'object') {
 		var o = arguments[0];
-		// if(typeof(arguments))
-		{
-			this.left = o.left;
-			this.right = o.right;
-			this.operator = o.operator;
-			this.selector = o.selector;
-		}
+
+		this.left = ensureExpression(o.left);
+		this.right = ensureExpression(o.right);
+		this.operator = o.operator;
+		this.selector = o.selector;
 	}
 	else {
 		if (typeof operator === 'function') {
 			this.selector = operator;
 		}
-		else {
+		else if (operator) {
 			this.operator = operator.toLowerCase();
 		}
 
-		this.left = left;
-		this.right = right;
+		this.left = ensureExpression(left);
+		right && (this.right = ensureExpression(right));
 	}
 }
 
@@ -39,7 +61,7 @@ function ComparisonPredicate (left, right, operator) {
 ComparisonPredicate.parse = function (s, vars) {
 	// console.group("parsing as comparison predicate: ", s);
 
-	var p = null;
+	var predicate;
 
 	var matches = s.match(regex);
 
@@ -51,16 +73,10 @@ ComparisonPredicate.parse = function (s, vars) {
 		// typecast - parse out the right side of the expression, trim whitespace, if it's quoted, it's not a key, so either cast it to a number or a string
 		var r = s.substr(i + l).trim();
 
-		/* if(!Predicate._isQuoted(r))
-		{
-			r=(isNaN(r) ? r : +r); // to strip quotes: r=(isNaN(r) ? r.replace(/["']/g, "") : +r);
-		}*/
-
-		// p={left:Expression.parse(s.substr(0, i).trim()), operator:m, right:Expression.parse(r)};
-		p = new ComparisonPredicate(Expression.parse(s.substr(0, i).trim(), vars), Expression.parse(r, vars), m);
+		predicate = new ComparisonPredicate(Expression.parse(s.substr(0, i).trim(), vars), Expression.parse(r, vars), m);
 	}
 
-	return p;
+	return predicate;
 };
 
 ComparisonPredicate.getLocaleStringForOperator = function (operator) {
@@ -85,60 +101,22 @@ ComparisonPredicate.getLocaleStringForOperator = function (operator) {
 	return localeString;
 };
 
-// $properties: ["left", "right", "operator", "selector"],
-
 ComparisonPredicate.prototype.copy = function () {
-	var copy = new ComparisonPredicate(this.left.copy(), this.right.copy(), this.operator || this.selector);
+	var copy = new ComparisonPredicate(this.left.copy(), (this.right ? this.right.copy() : undefined), this.operator || this.selector);
 
 	copy._substitutionVariables = this._substitutionVariables;
 
 	return copy;
 };
 
-ComparisonPredicate.prototype._predicateReferencesKeys = function (keys) {
-	return (this.left._expressionReferencesKeys(keys) || this.right._expressionReferencesKeys(keys));
-};
-
-ComparisonPredicate.prototype._predicateReferencesKeyPath = function () {
-	return this.left._expressionReferencesKeyPath() || this.right._expressionReferencesKeyPath();
-};
-
-// a comparison predicate can't be partially evaluated, so we'll just drop down to null==null
-ComparisonPredicate.prototype._removeExpressionsReferencingKeyPaths = function () {
-	if (this.left._expressionReferencesKeyPath() || this.right._expressionReferencesKeyPath()) {
-		this.left = new ConstantExpression(null);
-		this.right = new ConstantExpression(null);
-	}
-};
-
-ComparisonPredicate.prototype._removeExpressionsReferencingKeys = function (ks, ps) {
-	// console.log("remove expressions referencing keys: ", p, ks);
-
-	// ps || (ps=[]);
-
-	// // console.log("comparison predicate: ", p);
-
-	// if(!this._predicateReferencesKeys(ks))
-	// {
-	//	 ps.push(p);
-	// }
-
-	// return ps;
-
-	if (this.left._expressionReferencesKeys(ks) || this.right._expressionReferencesKeys(ks)) {
-		this.left = new ConstantExpression(null);
-		this.right = new ConstantExpression(null);
-	}
-};
-
 ComparisonPredicate.prototype.getDependentKeyPathExpressions = function () {
 	var r = [];
 
-	if (this.left.getType() === 'keyPath') {
+	if (this.left && this.left.getType() === 'keyPath') {
 		r.push(this.left);
 	}
 
-	if (this.right.getType() === 'keyPath') {
+	if (this.right && this.right.getType() === 'keyPath') {
 		r.push(this.right);
 	}
 
@@ -146,11 +124,21 @@ ComparisonPredicate.prototype.getDependentKeyPathExpressions = function () {
 };
 
 ComparisonPredicate.prototype.stringify = function (shouldSubstitute) {
-	return this.left.stringify(shouldSubstitute) + (this.operator ? this.operator : this.selector) + this.right.stringify(shouldSubstitute);
+	if (this.left && this.right) {
+		return [this.left.stringify(shouldSubstitute), (this.operator ? this.operator : this.selector), this.right.stringify(shouldSubstitute)].join(' ');
+	}
+	else {
+		return this.left.stringify();
+	}
 };
 
-ComparisonPredicate.prototype.toLocaleString = function () {
-	return this.left.toLocaleString() + (this.operator ? ComparisonPredicate.getLocaleStringForOperator(this.operator) : 'matches selector?') + this.right.toLocaleString();
+ComparisonPredicate.prototype.toLocaleString = function (shouldSubstitute) {
+	if (this.left && this.right) {
+		return [this.left.toLocaleString(shouldSubstitute), (this.operator ? ComparisonPredicate.getLocaleStringForOperator(this.operator) : this.selector), this.right.toLocaleString(shouldSubstitute)].join(' ');
+	}
+	else {
+		return this.left.toLocaleString();
+	}
 };
 
 ComparisonPredicate.prototype.evaluateWithObject = function (o, vars) {
@@ -161,7 +149,7 @@ ComparisonPredicate.prototype.evaluateWithObject = function (o, vars) {
 	var value;
 
 	if (this.selector) {
-		value = this.selector(left, right);
+		value = this.selector(leftExpressionValue, rightExpressionValue);
 	}
 	else {
 		var operator = this.operator;
@@ -186,58 +174,14 @@ ComparisonPredicate.prototype.evaluateWithObject = function (o, vars) {
 			value = (leftExpressionValue >= rightExpressionValue);
 		}
 		else if (operator === 'between') {
-			value = (rightExpressionValue <= leftExpressionValue && leftExpressionValue <= rightExpressionValue);
+			value = (rightExpressionValue[0] <= leftExpressionValue && leftExpressionValue <= rightExpressionValue[1]);
 		}
 		else if (operator === 'contains') {
 			if (leftExpressionValue && leftExpressionValue.constructor === Array) { // TODO: this should probably be done in _expressionValueWithObject
-				// check to see if we are working with managed objects...
-				if (leftExpressionValue.length) {
-					leftExpressionValue = leftExpressionValue.map(function (o) {
-						if (o) {
-							var ID;
-
-							if (o instanceof ManagedObject) {
-								ID = o.getID();
-
-								o = [ID.store.identifier, ID.entity.name, ID.reference].join('/');
-							}
-							else if (o.store && o.entity && o.reference) {
-								ID = o;
-
-								o = [ID.store.identifier, ID.entity.name, ID.reference].join('/');
-							}
-						}
-
-						return o;
-					});
-
-					// if(leftExpressionValue[0] instanceof ManagedObject)
-					// {
-					//	 // TODO: this method could be faster by not first mapping everything... once we find out if it's contained, we're done
-					//	 // TODO: it'd be great to have a simple mechanism for caching things like this... if it's part of a fetch request, it's probably going to happen again!
-					//	 //		 ManagedObjectContext.cache(cachedValue, forKey); ManagedObjectContext
-					//	 leftExpressionValue=leftExpressionValue.map(function (o){ var ID=o.getID(); return [ID.store.identifier, ID.entity.name, ID.reference].join("/"); });
-					// }
-					// else if(leftExpressionValue[0].store && leftExpressionValue[0].entity && leftExpressionValue[0].reference)
-					// {
-					//	 leftExpressionValue=leftExpressionValue.map(function (ID){ return [ID.store.identifier, ID.entity.name, ID.reference].join("/"); });
-					// }
-				}
-
-				if (rightExpressionValue) {
-					if (rightExpressionValue instanceof ManagedObject) {
-						rightExpressionValue = rightExpressionValue.getID();
-					}
-
-					if (rightExpressionValue.store && rightExpressionValue.entity && rightExpressionValue.reference) {
-						rightExpressionValue = [rightExpressionValue.store.identifier, rightExpressionValue.entity.name, rightExpressionValue.reference].join('/');
-					}
-				}
-
-				r = (leftExpressionValue.indexOf(rightExpressionValue) != -1);
+				value = (leftExpressionValue.indexOf(rightExpressionValue) !== -1);
 			}
 			else {
-
+				// ?
 			}
 		}
 		else if (operator === 'in') {
@@ -250,19 +194,10 @@ ComparisonPredicate.prototype.evaluateWithObject = function (o, vars) {
 			value = (leftExpressionValue.substr(-(rightExpressionValue.length)) === rightExpressionValue);
 		}
 		else if (operator === 'like') {
-			// convert the like predicate to a regex
-			var rightExpressionValueAsRegex = rightExpressionValue;
-
-			// ? - matches one character, we use regex .{1,1}, so 'asd?' becomes 'asd.{1,1}' which matches asdf
-			rightExpressionValueAsRegex = rightExpressionValueAsRegex.replace(new RegExp('\\?', 'g'), '.{1,1}');
-
-			// * - matches 0 or more characters, we use regex .* so 'asd*' becomes 'asd.*' which matches asd, asdf, and asdfghjkl;
-			rightExpressionValueAsRegex = rightExpressionValueAsRegex.replace(new RegExp('\\*', 'g'), '.*');
-
-			value = new RegExp(rightExpressionValueAsRegex, 'i').test(leftExpressionValue);
+			value = new RegExp(formatAsRegex(rightExpressionValue), 'i').test(leftExpressionValue);
 		}
 		else if (operator === 'matches') {
-			console.warn("Predicate: 'matches' comparison operation is not yet supported");
+			value = new RegExp(formatAsRegex(rightExpressionValue), 'i').test(leftExpressionValue);
 		}
 		else {
 			console.warn("ComparisonPredicate: Unrecognized operator '" + operator + "'");

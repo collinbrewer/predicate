@@ -1,10 +1,5 @@
 // http://developer.apple.com/library/mac/#documentation/cocoa/conceptual/Predicates/Articles/pBNF.html
 
-var Expression = require('@collinbrewer/expression');
-
-var parsedCache = {};
-var compiledCache = {};
-
 // TODO: this is the simplistic first run, look to predicater.html for an in-the-works full parser
 // var comparisonRegex=/(==|=|!=|<=|>=|<|>|between|contains|in|beginswith|endswith|like|matches)/i;
 // var compounderRegex=/[\b\s](&&|and|\|\||or)[\b\s]/gi;
@@ -57,8 +52,7 @@ Predicate.parse = function (s, vars) {
 Predicate.getExpressions = function (p) {
 	var es = [];
 
-	if (p.left) // comparison predicate
-	{
+	if (p.left) { // comparison predicate
 		es.push(p.left);
 		es.push(p.right);
 	}
@@ -77,94 +71,8 @@ Predicate.prototype.copy = function () {
 	console.warn("Predicate subclass requires 'copy' to be overridden.");
 };
 
-Predicate.prototype._removeExpressionsReferencingKeys = function () {};
-
 Predicate.prototype.getDependentKeyPathExpressions = function () {
 	return [];
-};
-
-Predicate.prototype._predicateReferencesKeyPath = function (p) {
-	p = Predicate.parse(p);
-
-	if (p.left) {
-		if (Expression._expressionReferencesKeyPath(p.left)) {
-			return true;
-		}
-
-		if (Expression._expressionReferencesKeyPath(p.right)) {
-			return true;
-		}
-	}
-	else {
-		for (var i = 0, l = p.length; i < l; i++) {
-			if (i % 2 === 0) {
-				if (Predicate._expressionReferencesKeyPath(p[i])) {
-					return true;
-				}
-			}
-		}
-	}
-
-	return false;
-};
-
-Predicate.prototype._predicateReferencesKeys = function (p, ks) {
-	// console.log("predicate references keys: ", p, ks);
-
-	p = Predicate.parse(p);
-
-	if (Expression._expressionReferencesKeys(p.left, ks)) {
-		return true;
-	}
-	else if (Expression._expressionReferencesKeys(p.right, ks)) {
-		return true;
-	}
-
-	return false;
-};
-
-Predicate.prototype._removeExpressionsReferencingKeyPaths = function (p, ps) {
-	console.log('remove expressions referencing keys: ', p, ps);
-
-	ps || (ps = []);
-
-	p = Predicate.parse(p);
-
-	if (p.left) // key==value, key>value
-	{
-		// console.log("comparison predicate: ", p);
-
-		if (!Predicate._predicateReferencesKeyPath(p)) {
-			ps.push(p);
-		}
-	}
-	else // key==value && key2>value2
-	{
-		// console.log("compound predicate: ", p);
-
-		for (var i = 0, l = p.length; i < l; i++) {
-			if (i % 2 === 0) {
-				if (Predicate._predicateReferencesKeyPath(p[i])) {
-					if (i < l - 1) // if there is a next compound, skip it
-					{
-						i++;
-					}
-					else if (i > 0) // if there is a previous compound, skip it
-					{
-						ps.splice(ps.length - 1, 1);
-					}
-				}
-				else {
-					ps = ps.concat(Predicate._removeExpressionsReferencingKeyPaths(p[i]));
-				}
-			}
-			else {
-				ps.push(p[i]);
-			}
-		}
-	}
-
-	return ps;
 };
 
 Predicate.prototype.toLocaleString = function () {
