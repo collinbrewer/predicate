@@ -1,6 +1,7 @@
 // http://developer.apple.com/library/mac/#documentation/cocoa/conceptual/Predicates/Articles/pBNF.html
 
 var Expression = require('@collinbrewer/expression');
+var ExpressionPredicate = require('./expression-predicate.js');
 
 var regex = /(==|=|!=|<=|>=|<|>|between|contains|in|beginswith|endswith|like|matches)/i;
 
@@ -59,8 +60,6 @@ function ComparisonPredicate (left, right, operator) {
 
 // returns an object in {left, operator, right} format
 ComparisonPredicate.parse = function (s, vars) {
-	// console.group("parsing as comparison predicate: ", s);
-
 	var predicate;
 
 	var matches = s.match(regex);
@@ -74,6 +73,9 @@ ComparisonPredicate.parse = function (s, vars) {
 		var r = s.substr(i + l).trim();
 
 		predicate = new ComparisonPredicate(Expression.parse(s.substr(0, i).trim(), vars), Expression.parse(r, vars), m);
+	}
+	else { // no comparator
+		predicate = ExpressionPredicate.parse(s, vars);
 	}
 
 	return predicate;

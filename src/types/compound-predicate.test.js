@@ -67,6 +67,47 @@ describe('CompoundPredicate', function () {
 		});
 	});
 
+	context('#and', function () {
+		it('should return a new and compound predicate', function () {
+			var predicate = CompoundPredicate.parse('1 AND 2').and(CompoundPredicate.parse('3 and 4'));
+			var subpredicates = predicate.getSubpredicates();
+
+			expect(subpredicates).to.have.length(2);
+			expect(subpredicates[0].subpredicates).to.have.length(2);
+			expect(subpredicates[1].subpredicates).to.have.length(2);
+		});
+	});
+
+	context('#or', function () {
+		it('should return a new or compound predicate', function () {
+			var predicate = CompoundPredicate.parse('1 AND 2').or(CompoundPredicate.parse('3 and 4'));
+			var subpredicates = predicate.getSubpredicates();
+
+			expect(subpredicates).to.have.length(2);
+			expect(subpredicates[0].subpredicates).to.have.length(2);
+			expect(subpredicates[1].subpredicates).to.have.length(2);
+		});
+	});
+
 	context('#evaluateWithObject', function () {
+		it('should return true', function () {
+			var predicate = CompoundPredicate.parse('true && true');
+			expect(predicate.evaluateWithObject()).to.be.true;
+		});
+
+		it('should return false', function () {
+			var predicate = CompoundPredicate.parse('true && false');
+			expect(predicate.evaluateWithObject()).to.be.false;
+		});
+
+		it('should return true', function () {
+			var predicate = CompoundPredicate.parse('true || false');
+			expect(predicate.evaluateWithObject()).to.be.true;
+		});
+
+		it('should return false', function () {
+			var predicate = CompoundPredicate.parse('false || false');
+			expect(predicate.evaluateWithObject()).to.be.false;
+		});
 	});
 });

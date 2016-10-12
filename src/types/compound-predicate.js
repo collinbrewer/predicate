@@ -50,14 +50,6 @@ CompoundPredicate.parse = function (s, vars) {
 	return predicate;
 };
 
-CompoundPredicate.and = function () {
-	return new CompoundPredicate('and', [].slice.call(arguments));
-};
-
-CompoundPredicate.or = function () {
-	return CompoundPredicate.apply(null, ['or'].concat(arguments));
-};
-
 CompoundPredicate.prototype.getGate = function () {
 	return this.gate;
 };
@@ -126,6 +118,8 @@ CompoundPredicate.prototype.evaluateWithObject = function (o, vars) {
 	return result;
 };
 
+// NOTE: could probably reduce the form here, this will yield '1 AND 2 AND (3 AND 4)'
+// as nested predicates instead of '1 AND 2 AND 3 AND 4' as one predicate
 CompoundPredicate.prototype.and = function (predicate) {
 	return new CompoundPredicate('and', [this, predicate]);
 };

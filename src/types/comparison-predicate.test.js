@@ -11,11 +11,6 @@ describe('ComparisonPredicate', function () {
 			expect(predicate.right.getKeyPath()).to.equal('bar');
 			expect(predicate.operator).to.equal('>');
 		});
-
-		it('should create fail to parse', function () {
-			var predicate = ComparisonPredicate.parse('foo && bar');
-			expect(predicate).to.be.undefined;
-		});
 	});
 
 	context('#constructor', function () {
