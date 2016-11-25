@@ -11,7 +11,7 @@ function ensurePredicate (p, args) {
 	var type = typeof p;
 
 	if (type === 'string') {
-		return Predicate.parse(p, arguments);
+		return Predicate.parse(p, args);
 	}
 	else {
 		return (p !== null && type === 'object' && ('evaluateWithObject' in p) ? p : new ComparisonPredicate(p, args));

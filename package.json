@@ -1,12 +1,12 @@
 {
   "name": "@collinbrewer/predicate",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A Javascript utility for evaluating objects against a set of criteria.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha src/**/*.test.js",
+    "test": "mocha 'src/**/*.test.js'",
     "test:watch": "npm run test -- --watch",
-    "test:cov": "istanbul cover --report lcov --report json --report text --report html  _mocha -- src/**/*.test.js --recursive",
+    "test:cov": "istanbul cover --report lcov --report json --report text --report html  _mocha -- 'src/**/*.test.js' --recursive",
     "pretest:codeclimate": "npm run test:cov",
     "test:codeclimate": "codeclimate-test-reporter < ./coverage/lcov.info",
     "autopublish": "publish"

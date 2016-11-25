@@ -22,8 +22,15 @@ describe('Predicate', function () {
 
 		it('returns a predicate when an existing predicate is provided', function () {
 			var predicate = Predicate.parse('1');
-			var existingPredicate = Predicate.parse(predicate);
+			// var existingPredicate = Predicate.parse(predicate);
 			expect(predicate).to.not.equal(undefined);
+		});
+
+		it('should create predicate with substitution variables', function () {
+			var substitutionVariables = {'FOO': 1234};
+			var predicate = Predicate.parse('foo==$FOO', substitutionVariables);
+			expect(predicate).to.exist;
+			expect(predicate.right._substitutionVariables).to.equal(substitutionVariables);
 		});
 	});
 
