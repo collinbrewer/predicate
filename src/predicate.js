@@ -1,4 +1,15 @@
 // http://developer.apple.com/library/mac/#documentation/cocoa/conceptual/Predicates/Articles/pBNF.html
+var ebnf = require('ebnf');
+var Grammars = ebnf.Grammars;
+var fs = require('fs');
+var grammar = fs.readFileSync(__dirname + '/grammar.bnf', 'utf8').replace(/(\n   )/g, ' ');
+
+console.log('grammar', grammar);
+
+let parser = new Grammars.W3C.Parser(grammar);
+console.log('parser', parser);
+// let ast = parser.getAST();
+// console.log('ast', ast);
 
 // TODO: this is the simplistic first run, look to predicater.html for an in-the-works full parser
 // var comparisonRegex=/(==|=|!=|<=|>=|<|>|between|contains|in|beginswith|endswith|like|matches)/i;

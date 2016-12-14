@@ -20,6 +20,11 @@ describe('Predicate', function () {
 			expect(predicate.subpredicates).to.have.length(2);
 		});
 
+		it('returns a nested compound predicate', function () {
+			var predicate = Predicate.parse('1==1 && (2==1 || 2==2)');
+			console.log('predicate', predicate);
+		});
+
 		it('returns a predicate when an existing predicate is provided', function () {
 			var predicate = Predicate.parse('1');
 			// var existingPredicate = Predicate.parse(predicate);

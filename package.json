@@ -29,6 +29,7 @@
     "publish": "^0.6.0"
   },
   "dependencies": {
-    "@collinbrewer/expression": "^0.4.1"
+    "@collinbrewer/expression": "^0.4.1",
+    "ebnf": "^1.5.0"
   }
 }
