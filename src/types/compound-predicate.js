@@ -8,14 +8,19 @@ var shorthandGates = {
 
 function ensurePredicate (p, args) {
 	var Predicate = require('../predicate.js');
+	var predicate;
 	var type = typeof p;
 
 	if (type === 'string') {
-		return Predicate.parse(p, args);
+		var trimmed = p.trim();
+		if (trimmed[0] === '(') { trimmed = trimmed.substr(1, trimmed.length - 2); }
+		predicate = Predicate.parse(trimmed, args);
 	}
 	else {
-		return (p !== null && type === 'object' && ('evaluateWithObject' in p) ? p : new ComparisonPredicate(p, args));
+		predicate = (p !== null && type === 'object' && ('evaluateWithObject' in p) ? p : new ComparisonPredicate(p, args));
 	}
+
+	return predicate;
 }
 
 /**
@@ -32,6 +37,11 @@ function CompoundPredicate (gate, a) {
 	});
 }
 
+/**
+ * Parses two forms
+ * - 1==1 && 2==2
+ * - 1==1 && (2==2 || 3==3)
+ */
 CompoundPredicate.parse = function (s, vars) {
 	var predicate;
 	var matches = s.match(regex);
