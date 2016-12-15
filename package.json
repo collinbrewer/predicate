@@ -1,6 +1,6 @@
 {
   "name": "@collinbrewer/predicate",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "A Javascript utility for evaluating objects against a set of criteria.",
   "main": "index.js",
   "scripts": {
