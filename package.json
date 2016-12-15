@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://collinbrewer@bitbucket.org/collinbrewer/predicate.git"
+    "url": "https://github.com/collinbrewer/predicate"
   },
   "author": "Collin Brewer <collin@brewer-collective.com>",
   "license": "ISC",
