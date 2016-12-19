@@ -14,10 +14,10 @@ describe('Predicate', function () {
 			expect(predicate.type).to.equal('comparison');
 		});
 
-		it('returns a complex compound predicate', function () {
-			var predicate = Predicate.parse('1==1 && 2==2');
+		it.only('returns a complex compound predicate', function () {
+			var predicate = Predicate.parse('1==1 && 2==2 && 3==3');
 			expect(predicate).to.have.property('subpredicates');
-			expect(predicate.subpredicates).to.have.length(2);
+			expect(predicate.subpredicates).to.have.length(3);
 		});
 
 		it('returns a nested compound predicate', function () {
@@ -45,6 +45,15 @@ describe('Predicate', function () {
 
 			expect(predicate.subpredicates[1].subpredicates[1].left).to.have.property('value', 2);
 			expect(predicate.subpredicates[1].subpredicates[1].right).to.have.property('value', 2);
+		});
+
+		it('returns a multiple coumpound predicates', function () {
+			var predicate = Predicate.parse('(1==1 && 2==2) || (3==3 && 4==4)');
+
+			console.log('final predicate', predicate);
+
+			expect(predicate).to.have.property('subpredicates');
+			expect(predicate.subpredicates).to.have.length(2);
 		});
 
 		it('returns a predicate when an existing predicate is provided', function () {

@@ -42,19 +42,106 @@ function CompoundPredicate (gate, a) {
  * - 1==1 && 2==2
  * - 1==1 && (2==2 || 3==3)
  */
-CompoundPredicate.parse = function (s, vars) {
+CompoundPredicate.parse = function (str, vars) {
 	var predicate;
-	var matches = s.match(regex);
+	var gate;
 
-	if (matches) {
-		var compounder = matches[0].trim();
-		var index = s.indexOf(compounder);
-		var firstPredicateString = s.substring(0, index);
-		var secondPredicateString = s.substring(index + compounder.length);
-		var firstPredicate = ensurePredicate(firstPredicateString, vars);
-		var secondPredicate = ensurePredicate(secondPredicateString, vars);
+	function getParts (s) {
+		console.log('getParts', s);
+		var matches = s.match(regex);
+		var gate = (matches ? matches[0].trim() : undefined);
+		var parts = s.split(gate);
+		var subpredicates = [];
 
-		predicate = new CompoundPredicate(compounder, [firstPredicate, secondPredicate]);
+		parts.forEach(function (part) {
+			subpredicates.push(part.trim());
+		});
+
+		console.log('gate', gate);
+		console.log('subpredicates', subpredicates);
+
+		return {
+			subpredicates: subpredicates,
+			gate: gate
+		};
+	}
+
+	function splitByGates (s) {
+		var subpredicates = [];
+		var gate;
+		var i;
+		var l;
+		var c;
+		var scopeStack = [];
+		var current = '';
+		var parts;
+
+		for (i = 0, l = s.length; i < l; i++) {
+			c = s[i];
+
+			if (c === '(') {
+				// if the scope is open, we found the start of a new predicate so push up the previous
+				if (scopeStack.length === 0 && current) {
+					parts = getParts(current);
+					gate = parts.gate;
+
+					if (parts.subpredicates) {
+						subpredicates = subpredicates.concat(parts.subpredicates);
+					}
+				}
+				scopeStack.push(c);
+				current = '';
+			}
+			else if (c === ')') {
+				scopeStack.pop();
+
+				// if we've resolved all open scopes, then we're done, push it up
+				if (scopeStack.length === 0) {
+					subpredicates.push(current);
+				}
+
+				current = '';
+			}
+			else { // nothing special, just keep pushing
+				current += c;
+			}
+		}
+
+		if (current) {
+			parts = getParts(current);
+
+			if (parts.gate) {
+				gate = parts.gate;
+			}
+
+			if (parts.subpredicates) {
+				subpredicates = subpredicates.concat(parts.subpredicates);
+			}
+		}
+
+		return {
+			subpredicates: subpredicates,
+			gate: gate
+		};
+	}
+
+	var splits = splitByGates(str);
+
+	console.log('result', splits);
+
+	let subpredicate;
+	let subpredicates = [];
+
+	while ((subpredicate = splits.subpredicates.shift())) {
+		console.log('SUBPREDICATE', subpredicate)
+
+		subpredicates.push(ensurePredicate(subpredicate));
+	}
+
+	// if no gate, it's a single statement, just use and
+	if (gate && subpredicates.length > 0) {
+		console.log('has gate and subpredicates');
+		predicate = new CompoundPredicate(gate, subpredicates);
 	}
 
 	return predicate;
