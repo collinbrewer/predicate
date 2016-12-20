@@ -1,9 +1,8 @@
 Predicate
 =========
 [![Travis](https://img.shields.io/travis/collinbrewer/predicate.svg?maxAge=2592000)](https://travis-ci.org/collinbrewer/predicate)
-[![Coveralls](https://img.shields.io/coveralls/collinbrewer/predicate.svg?maxAge=2592000)](https://coveralls.io/github/collinbrewer/predicate)
+[![Test Coverage](https://codeclimate.com/github/collinbrewer/predicate/badges/coverage.svg)](https://codeclimate.com/github/collinbrewer/predicate/coverage)
 [![Code Climate](https://img.shields.io/codeclimate/github/collinbrewer/predicate.svg?maxAge=2592000)](https://codeclimate.com/github/collinbrewer/predicate)
-[![David](https://img.shields.io/david/collinbrewer/predicate.svg?maxAge=2592000)](https://david-dm.org/collinbrewer/predicate)
 
 A Javascript utility for evaluating objects against a set of criteria.
 
