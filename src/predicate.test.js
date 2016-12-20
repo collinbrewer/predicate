@@ -14,7 +14,7 @@ describe('Predicate', function () {
 			expect(predicate.type).to.equal('comparison');
 		});
 
-		it.only('returns a complex compound predicate', function () {
+		it('returns a complex compound predicate', function () {
 			var predicate = Predicate.parse('1==1 && 2==2 && 3==3');
 			expect(predicate).to.have.property('subpredicates');
 			expect(predicate.subpredicates).to.have.length(3);
@@ -47,10 +47,42 @@ describe('Predicate', function () {
 			expect(predicate.subpredicates[1].subpredicates[1].right).to.have.property('value', 2);
 		});
 
+		it('returns a deep nested coumpound predicates', function () {
+			var predicate = Predicate.parse('1==1 && (2==2 && (3==3))');
+
+			// expect predicate to be a compound predicate with two subpredicates
+			expect(predicate).to.have.property('subpredicates');
+			expect(predicate.subpredicates).to.have.length(2);
+
+			// expect first subpredicate to be a comparison predicate with two constant expressions
+			expect(predicate.subpredicates[0]).to.have.property('left');
+			expect(predicate.subpredicates[0].left).to.have.property('type', 'constant');
+			expect(predicate.subpredicates[0].left).to.have.property('value', 1);
+
+			expect(predicate).to.have.property('subpredicates');
+			expect(predicate.subpredicates).to.have.length(2);
+
+			// expect the first subpredicate of the first nested subpredicate to be a comparison
+			// predicate with two constant expressions
+			expect(predicate.subpredicates[1].subpredicates[0]).to.have.property('left');
+			expect(predicate.subpredicates[1].subpredicates[0].left).to.have.property('type', 'constant');
+			expect(predicate.subpredicates[1].subpredicates[0].left).to.have.property('value', 2);
+
+			// expect the first subpredicate of the second nested subpredicate to be a comparison
+			// predicate with two constant expressions
+			expect(predicate.subpredicates[1].subpredicates[1]).to.have.property('left');
+			expect(predicate.subpredicates[1].subpredicates[1].left).to.have.property('type', 'constant');
+			expect(predicate.subpredicates[1].subpredicates[1].left).to.have.property('value', 3);
+
+			//
+			// // expect first subpredicate to be a comparison predicate with two constant expressions
+			// expect(predicate.subpredicates[0]).to.have.property('left');
+			// expect(predicate.subpredicates[0].left).to.have.property('type', 'constant');
+			// expect(predicate.subpredicates[0].left).to.have.property('value', 3);
+		});
+
 		it('returns a multiple coumpound predicates', function () {
 			var predicate = Predicate.parse('(1==1 && 2==2) || (3==3 && 4==4)');
-
-			console.log('final predicate', predicate);
 
 			expect(predicate).to.have.property('subpredicates');
 			expect(predicate.subpredicates).to.have.length(2);

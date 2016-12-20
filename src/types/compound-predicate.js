@@ -44,21 +44,21 @@ function CompoundPredicate (gate, a) {
  */
 CompoundPredicate.parse = function (str, vars) {
 	var predicate;
-	var gate;
 
 	function getParts (s) {
-		console.log('getParts', s);
 		var matches = s.match(regex);
 		var gate = (matches ? matches[0].trim() : undefined);
 		var parts = s.split(gate);
 		var subpredicates = [];
+		var cleanPart;
 
 		parts.forEach(function (part) {
-			subpredicates.push(part.trim());
-		});
+			cleanPart = part.trim();
 
-		console.log('gate', gate);
-		console.log('subpredicates', subpredicates);
+			if (cleanPart) {
+				subpredicates.push(part.trim());
+			}
+		});
 
 		return {
 			subpredicates: subpredicates,
@@ -88,24 +88,33 @@ CompoundPredicate.parse = function (str, vars) {
 					if (parts.subpredicates) {
 						subpredicates = subpredicates.concat(parts.subpredicates);
 					}
+
+					current = '';
 				}
 				scopeStack.push(c);
-				current = '';
+				current += c;
 			}
 			else if (c === ')') {
+				current += c;
 				scopeStack.pop();
 
 				// if we've resolved all open scopes, then we're done, push it up
 				if (scopeStack.length === 0) {
-					subpredicates.push(current);
-				}
+					current = current.trim();
 
-				current = '';
+					if (current) {
+						subpredicates.push(current);
+					}
+
+					current = '';
+				}
 			}
 			else { // nothing special, just keep pushing
 				current += c;
 			}
 		}
+
+		current = current.trim();
 
 		if (current) {
 			parts = getParts(current);
@@ -127,21 +136,12 @@ CompoundPredicate.parse = function (str, vars) {
 
 	var splits = splitByGates(str);
 
-	console.log('result', splits);
+	if (splits.gate && splits.subpredicates.length > 0) {
+		var subs = splits.subpredicates.map(function (subpredicate) {
+			return ensurePredicate(subpredicate, vars);
+		});
 
-	let subpredicate;
-	let subpredicates = [];
-
-	while ((subpredicate = splits.subpredicates.shift())) {
-		console.log('SUBPREDICATE', subpredicate)
-
-		subpredicates.push(ensurePredicate(subpredicate));
-	}
-
-	// if no gate, it's a single statement, just use and
-	if (gate && subpredicates.length > 0) {
-		console.log('has gate and subpredicates');
-		predicate = new CompoundPredicate(gate, subpredicates);
+		predicate = new CompoundPredicate(splits.gate, subs);
 	}
 
 	return predicate;
